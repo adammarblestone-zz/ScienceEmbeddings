@@ -3,7 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import os
 import io
-import nltk
 import logging
 import nltk
 from nltk.corpus import stopwords
@@ -41,8 +40,6 @@ def main():
 	model.alpha -= 0.002
 	model.min_alpha = model.alpha
 
-    print model.most_similar("SENT_0") # for debugging purposes
-
     print "Saving Doc2Vec model..."
     model.save(outdir + subdir + "doc2vec_model")
 
@@ -66,8 +63,6 @@ class SentenceList(object):
             for s in sentences:
                 q = str(cleanDoc(s)).split()
 		r = gensim.models.doc2vec.LabeledSentence(words = q, labels = ["SENT_" + str(j)])
-                if j == 0: # for debugging purposes
-		    print q
                 yield r
 		j += 1
 
