@@ -34,7 +34,9 @@ def main():
     print "Making Doc2Vec model..."
     model = gensim.models.Doc2Vec(alpha = 0.025, min_alpha = 0.025)
     model.build_vocab(allTheSentences)
-    for ephoch in range(10):
+
+    num_epochs = 10
+    for epoch in range(num_epochs):
 	model.train(allTheSentences)
 	model.alpha -= 0.002
 	model.min_alpha = model.alpha
@@ -62,14 +64,12 @@ class SentenceList(object):
         for line in iter_documents(self.indir):
             sentences = sentence_tokenizer.tokenize(line)
             for s in sentences:
-		j += 1
                 q = str(cleanDoc(s)).split()
-		r = gensim.models.doc2vec.LabeledSentence(words = q, labels = ["SENT_%i" %j])
-
+		r = gensim.models.doc2vec.LabeledSentence(words = q, labels = ["SENT_" + str(j)])
                 if j == 0: # for debugging purposes
 		    print q
-
                 yield r
+		j += 1
 
 if __name__ == '__main__':
     main()
