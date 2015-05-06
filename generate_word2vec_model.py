@@ -8,6 +8,10 @@ import logging
 import nltk
 from nltk.corpus import stopwords
 
+subdir = "neuroscience_abstracts/"
+indir = "../PubMed/"
+outdir = "../ScienceEmbeddingsOutputs/" 
+
 logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
 sentence_tokenizer = nltk.data.load('tokenizers/punkt/english.pickle')
 
@@ -25,9 +29,6 @@ def cleanDoc(doc):
     return final_str
 
 def main():
-    subdir = "neuroscience_abstracts"
-    indir = "../PubMed/"
-    outdir = "../ScienceEmbeddingsOutputs/" 
     print "Setting up access to all the sentences..."
     allTheSentences = SentenceList(indir + subdir)
     print "Making Word2Vec model..."
@@ -35,25 +36,24 @@ def main():
     print "Saving Word2Vec model..."
     model.save(outdir + subdir + "word2vec_model")
 
-def iter_documents(indir):
+def iter_documents(ind):
     print "Reading documents..."
-    for filename in os.listdir(indir):
+    for filename in os.listdir(ind):
         if filename[:9] == "abstracts":
             print "Filename: %s" % filename
-            for line in open(indir + "/" + filename).readlines():
+            for line in open(ind + filename).readlines():
                 if len(line) > 1:
                     yield line.decode('ascii', 'ignore').strip()
 
 class SentenceList(object):
-    def __init__(self, indir):
-        self.indir = indir
+    def __init__(self, ind):
+        self.indir = ind
         
     def __iter__(self):
         for line in iter_documents(self.indir):
             sentences = sentence_tokenizer.tokenize(line)
             for s in sentences:
                 q = str(cleanDoc(s)).split()
-                print q
                 yield q
 
 if __name__ == '__main__':

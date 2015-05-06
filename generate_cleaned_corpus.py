@@ -6,6 +6,10 @@ import io
 import nltk
 from nltk.corpus import stopwords
 
+subdir = "neuroscience_abstracts/"
+indir = "../PubMed/"
+outdir = "../ScienceEmbeddingsOutputs/"
+
 def cleanDoc(doc):
     stopset = set(stopwords.words('english'))
     #stemmer = nltk.PorterStemmer()
@@ -18,9 +22,6 @@ def cleanDoc(doc):
     return final_str
 
 def main():
-    subdir = "neuroscience_abstracts"
-    indir = "../PubMed/"
-    outdir = "../ScienceEmbeddingsOutputs/"
 
     # Construct the corpus
     c = abstractsCorpus(indir + subdir)
@@ -29,20 +30,21 @@ def main():
     print "Saving the corpus."
     gensim.corpora.MmCorpus.serialize(outdir + subdir + "corpus_cleaned.mm", c)
     
-def iter_documents(indir):
+def iter_documents(ind):
     print "Loading tokens into dictionary..."
-    for filename in os.listdir(indir):
+    for filename in os.listdir(ind):
+	if filename[-4:] == ".txt": # this is so as not to include hidden files and such
             print "Filename: %s" % filename
-            for line in open(indir + "/" + filename).readlines():
+            for line in open(ind + filename).readlines():
                 if len(line) > 1:
                     yield gensim.utils.tokenize(cleanDoc(line.decode('ascii', 'ignore').strip()), lower=True) # added a call to cleanDoc
 
 class abstractsCorpus(object):
-    def __init__(self, indir):
-        self.indir = indir
+    def __init__(self, ind):
+        self.indir = ind
         self.dictionary = gensim.corpora.Dictionary(iter_documents(self.indir))
         self.dictionary.filter_extremes(no_below = 1, keep_n = 30000) # check API docs for pruning params
-        self.dictionary.save('dict_corpus_cleaned.dict')
+        self.dictionary.save(outdir + subdir + "dict_corpus_cleaned.dict")
 
     def __iter__(self):
         print "Creating vector corpus from tokens..."
