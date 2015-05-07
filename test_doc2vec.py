@@ -58,7 +58,7 @@ def main():
     for s in ["neuron", "glia", "tetrode", "opsin"]:
 	allTheSentences = SentenceList(indir + subdir)
         print "Most similar sentences to: %s \n" % s
-        m = model.most_similar(positive=[s])
+        m = model.most_similar(positive=[s], topn=5)
 	for k in m:
 	    if k[0][:5] == "SENT_":
 		print getSentence(k[0], allTheSentences)
