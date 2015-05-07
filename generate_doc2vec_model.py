@@ -6,6 +6,7 @@ import io
 import logging
 import nltk
 from nltk.corpus import stopwords
+import random
 
 subdir = "neuroscience_abstracts/"
 indir = "../PubMed/"
@@ -36,12 +37,17 @@ def main():
 
     num_epochs = 10
     for epoch in range(num_epochs):
-	model.train(allTheSentences)
+	model.train(randomly(allTheSentences))
 	model.alpha -= 0.002
 	model.min_alpha = model.alpha
 
     print "Saving Doc2Vec model..."
     model.save(outdir + subdir + "doc2vec_model")
+
+def randomly(seq):
+    shuffled = list(seq)
+    random.shuffle(shuffled)
+    return iter(shuffled)
 
 def iter_documents(ind):
     print "Reading documents..."
