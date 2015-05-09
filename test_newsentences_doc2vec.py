@@ -6,6 +6,7 @@ import io
 import nltk
 import logging
 from nltk.corpus import stopwords
+import pickle
 
 subdir = "neuroscience_abstracts/"
 indir = "../PubMed/"
@@ -46,10 +47,6 @@ def iter_documents(ind):
                 if len(line) > 1:
                     yield line.decode('ascii', 'ignore').strip()
 
-def getSentence(label, it):
-    n = next(f["words"] for f in it if f["labels"] == label)
-    return n
-
 def add_new_labels(sentences, model): # Adapted from https://gist.github.com/zseder/4201551d7f8608f0b82b
 	sentence_no = -1
 	total_words = 0
@@ -76,10 +73,21 @@ def main():
     print "Loading Doc2Vec model..."
     model = gensim.models.Doc2Vec.load(outdir + subdir + "doc2vec_model")
 
-    print "Loading all the sentences..."
-    allTheSentences = SentenceList(indir + subdir)
+    pickle_filename = indir + subdir + "sentenceDict.pickle"
+    if not os.path.isfile(pickle_filename):
+    	print "Loading all the sentences..."
+    	allTheSentences = SentenceList(indir + subdir)
+    	print "Making a label dictionary for all the sentences..."
+    	sentenceDict = {}
+    	for s in allTheSentences:
+	    sentenceDict[s["labels"]] = s["words"]
+	print "Pickling the dictionary..."
+   	pickle.dump(sentenceDict, open(pickle_filename, "wb"))
+    else:
+	print "Loading pickled dictionary..."
+	sentenceDict = pickle.load(open(pickle_filename, "rb"))
 
-    test_paragraphs = ["The existence of a canonical cortical microcircuit can be inferred from neuroanatomy."]
+    test_paragraphs = ["Vertical thalamocortical afferents give rise to the elementary functional units of sensory cortex, cortical columns. Principles that underlie communication between columns remain however unknown. Here we unravel these by reconstructing in vivo-labeled neurons from all excitatory cell types in the vibrissal part of rat primary somatosensory cortex (vS1). Integrating the morphologies into an exact 3D model of vS1 revealed that the majority of intracortical (IC) axons project far beyond the borders of the principal column. We defined the corresponding innervation volume as the IC-unit. Deconstructing this structural cortical unit into its cell type-specific components, we found asymmetric projections that innervate columns of either the same whisker row or arc, and which subdivide vS1 into 2 orthogonal [supra-]granular and infragranular strata. We show that such organization could be most effective for encoding multi whisker inputs. Communication between columns is thus organized by multiple highly specific horizontal projection patterns, rendering IC-units as the primary structural entities for processing complex sensory stimuli. ", "Although much interest has attended the cryopreservation of immature neurons for subsequent therapeutic intracerebral transplantation, there are no reports on the cryopreservation of organized adult cerebral tissue slices of potential interest for pharmaceutical drug development. We report here the first experiments on cryopreservation of mature rat transverse hippocampal slices. Freezing at 1.2 degrees C/min to -20 degrees C or below using 10 or 30% v/v glycerol or 20% v/v dimethyl sulfoxide yielded extremely poor results. Hippocampal slices were also rapidly inactivated by simple exposure to a temperature of 0 degree C in artificial cerebrospinal fluid (aCSF). This effect was mitigated somewhat by 0.8 mM vitamin C, the use of a more \"intracellular\" version of aCSF having reduced sodium and calcium levels and higher potassium levels, and the presence of a 25% w/v mixture of dimethyl sulfoxide, formamide, and ethylene glycol (\"V(EG) solutes\"; Cryobiology 48, pp. 22-35, 2004). It was not mitigated by glycerol, aspirin, indomethacin, or mannitol addition to aCSF. When RPS-2 (Cryobiology 21, pp. 260-273, 1984) was used as a carrier solution for up to 50% w/v V(EG) solutes, 0 degree C was more protective than 10 degrees C. Raising V(EG) concentration to 53% w/v allowed slice vitrification without injury from vitrification and rewarming per se, but was much more damaging than exposure to 50% w/v V(EG). This problem was overcome by using the analogous 61% w/v VM3 vitrification solution (Cryobiology 48, pp. 157-178, 2004) containing polyvinylpyrrolidone and two extracellular \"ice blockers.\" With VM3, it was possible to attain a tissue K(+)/Na(+) ratio after vitrification ranging from 91 to 108% of that obtained with untreated control slices. Microscopic examination showed severe damage in frozen-thawed slices, but generally good to excellent ultrastructural and histological preservation after vitrification. Our results provide the first demonstration that both the viability and the structure of mature organized, complex neural networks can be well preserved by vitrification. These results may assist neuropsychiatric drug evaluation and development and the transplantation of integrated brain regions to correct brain disease or injury."]
 
     labeled_test_sentences = []
     j = 0
@@ -129,7 +137,7 @@ def main():
         print "...in other words:"
 	for k in m:
 	    if k[0][:5] == "SENT_":
-		print getSentence(k[0], allTheSentences)
+		print sentenceDict[k[0]]
 	    else: # if it is a single word
 		print k[0]
         print "\n"
