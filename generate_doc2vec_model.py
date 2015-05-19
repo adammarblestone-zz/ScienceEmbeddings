@@ -50,8 +50,8 @@ def main():
 def iter_documents(ind):
     print "Reading documents..."
     dirList = os.listdir(ind)
-    dirListShuffled = random.shuffle(dirList)
-    for filename in dirListShuffled:
+    random.shuffle(dirList)
+    for filename in dirList:
         if filename[:9] == "abstracts" or filename[:5] == "SHARD":
             print "Filename: %s" % filename
             for line in open(ind + filename).readlines():
