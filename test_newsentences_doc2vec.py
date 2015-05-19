@@ -72,6 +72,7 @@ def main():
 
     print "Loading Doc2Vec model..."
     model = gensim.models.Doc2Vec.load(outdir + subdir + "doc2vec_model")
+    model.workers = 8
 
     pickle_filename = indir + subdir + "sentenceDict.pickle"
     if not os.path.isfile(pickle_filename):

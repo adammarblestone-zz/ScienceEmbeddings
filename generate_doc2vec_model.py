@@ -7,8 +7,9 @@ import logging
 import nltk
 from nltk.corpus import stopwords
 import random
+import gc
 
-subdir = "neuroscience_abstracts/"
+subdir = "shards/"
 indir = "../PubMed/"
 outdir = "../ScienceEmbeddingsOutputs/" 
 
@@ -32,27 +33,26 @@ def main():
     print "Setting up access to all the sentences..."
     allTheSentences = SentenceList(indir + subdir)
     print "Making Doc2Vec model..."
-    model = gensim.models.Doc2Vec(alpha = 0.025, min_alpha = 0.025)
+    model = gensim.models.Doc2Vec(alpha = 0.025, min_alpha = 0.025, workers = 8)
     model.build_vocab(allTheSentences)
 
     num_epochs = 10
     for epoch in range(num_epochs):
-	model.train(randomly(allTheSentences))
+	gc.collect()
+	allTheSentences = SentenceList(indir + subdir)
+	model.train(allTheSentences)
 	model.alpha -= 0.002
 	model.min_alpha = model.alpha
 
     print "Saving Doc2Vec model..."
     model.save(outdir + subdir + "doc2vec_model")
 
-def randomly(seq):
-    shuffled = list(seq)
-    random.shuffle(shuffled)
-    return iter(shuffled)
-
 def iter_documents(ind):
     print "Reading documents..."
-    for filename in os.listdir(ind):
-        if filename[:9] == "abstracts":
+    dirList = os.listdir(ind)
+    dirListShuffled = random.shuffle(dirList)
+    for filename in dirListShuffled:
+        if filename[:9] == "abstracts" or filename[:5] == "SHARD":
             print "Filename: %s" % filename
             for line in open(ind + filename).readlines():
                 if len(line) > 1:
